@@ -10,51 +10,46 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # Step 1: Checkout repo
-    - name: Checkout repository
-      uses: actions/checkout@v3
+      # Step 1: Checkout repo
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-    # Step 2: Set up Docker Buildx
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v2
+      # Step 2: Set up Docker Buildx
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
 
-    # Step 3: Log in to DockerHub
-    - name: Log in to DockerHub
-      uses: docker/login-action@v2
-      with:
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
+      # Step 3: Log in to DockerHub
+      - name: Log in to DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
-    # Step 4: Build and push Docker image
-    - name: Build and push Docker image
-      uses: docker/build-push-action@v5
-      with:
-        context: .
-        push: true
-        tags: ${{ secrets.DOCKER_USERNAME }}/wisecow:latest
-        # Optional: add a version tag based on commit
-        # tags: ${{ secrets.DOCKER_USERNAME }}/wisecow:latest,${{ secrets.DOCKER_USERNAME }}/wisecow:${{ github.sha }}
+      # Step 4: Build and push Docker image
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/wisecow:latest
 
-    # Step 5: Set up kubectl
-    - name: Set up kubeconfig
-      run: |
-        mkdir -p $HOME/.kube
-        echo "${{ secrets.KUBECONFIG }}" | base64 --decode > $HOME/.kube/config
-        kubectl config view
+      # Step 5: Set up kubeconfig
+      - name: Set up kubeconfig
+        run: |
+          mkdir -p $HOME/.kube
+          echo "${{ secrets.KUBECONFIG }}" | base64 --decode > $HOME/.kube/config
+          kubectl config view
 
-     - name: Test Kubernetes Connection
+      # Step 6: Test Kubernetes connection
+      - name: Test Kubernetes Connection
         run: kubectl get nodes
 
-    # Step 6: Apply Kubernetes manifests
-    - name: Deploy to Kubernetes
-      run: |
-        kubectl apply -f k8s/deployment.yaml
-        kubectl apply -f k8s/service.yaml
-        kubectl apply -f k8s/ingress.yaml
-        
-        # Update image in case deployment already exists
-        kubectl set image deployment/wisecow-deployment wisecow=${{ secrets.DOCKER_USERNAME }}/wisecow:latest
-        
-        # Wait until the rollout is done
-        kubectl rollout status deployment/wisecow-deployment
+      # Step 7: Deploy to Kubernetes
+      - name: Deploy to Kubernetes
+        run: |
+          kubectl apply -f k8s/deployment.yaml
+          kubectl apply -f k8s/service.yaml
+          kubectl apply -f k8s/ingress.yaml
+          kubectl set image deployment/wisecow-deployment wisecow=${{ secrets.DOCKER_USERNAME }}/wisecow:latest
+          kubectl rollout status deployment/wisecow-deployment
 
