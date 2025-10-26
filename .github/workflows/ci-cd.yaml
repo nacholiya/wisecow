@@ -36,11 +36,14 @@ jobs:
         # tags: ${{ secrets.DOCKER_USERNAME }}/wisecow:latest,${{ secrets.DOCKER_USERNAME }}/wisecow:${{ github.sha }}
 
     # Step 5: Set up kubectl
-    - name: Set up kubectl
-      uses: azure/setup-kubectl@v3
-      with:
-        method: kubeconfig
-        kubeconfig: ${{ secrets.KUBECONFIG }}
+    - name: Set up kubeconfig
+      run: |
+        mkdir -p $HOME/.kube
+        echo "${{ secrets.KUBECONFIG }}" | base64 --decode > $HOME/.kube/config
+        kubectl config view
+
+     - name: Test Kubernetes Connection
+        run: kubectl get nodes
 
     # Step 6: Apply Kubernetes manifests
     - name: Deploy to Kubernetes
