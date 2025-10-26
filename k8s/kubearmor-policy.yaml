@@ -1,0 +1,34 @@
+apiVersion: security.kubearmor.com/v1
+kind: KubeArmorPolicy
+metadata:
+  name: wisecow-zero-trust
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: wisecow
+  file:
+    matchPaths:
+      # Only allow access to application files
+      - path: /app/*
+        action: Allow
+      - path: /etc/ssl/*
+        action: Allow
+      - path: /tmp/*
+        action: Allow
+      # Deny everything else
+      - path: /*
+        action: Block
+  process:
+    matchPaths:
+      # Only allow the main Wisecow executable
+      - path: /app/wisecow
+        action: Allow
+      # Deny everything else
+      - path: /*
+        action: Block
+  network:
+    matchProtocols:
+      - protocol: TCP
+        action: Allow  # or restrict to known ports
+
