@@ -1,0 +1,16 @@
+name: Wisecow CD Pipeline
+
+on:
+  workflow_run:
+    workflows: ["Wisecow CI Pipeline"]
+    types:
+      - completed
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+
+    steps:
+      - name: Update Deployment
+        run: |
+          kubectl set image deployment/wisecow wisecow=${{ secrets.DOCKER_USERNAME }}/wisecow:latest

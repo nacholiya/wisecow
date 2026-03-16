@@ -1,4 +1,4 @@
-name: Wisecow CI/CD Pipeline
+name: Wisecow CI Pipeline
 
 on:
   push:
